@@ -9,11 +9,10 @@ public class ReportWatermark {
             throw new IllegalArgumentException("El reporte no puede ser nulo");
         }
 
-        String mark = watermark == null ? "CONFIDENCIAL" : watermark;
-
-        String currentTitle = report.getTitle();
-        report.setTitle("[" + mark + "] " +
-                (currentTitle == null ? "" : currentTitle));
+        report.setWatermark(
+                watermark == null || watermark.isBlank()
+                        ? "CONFIDENCIAL"
+                        : watermark.trim());
 
         return report;
     }

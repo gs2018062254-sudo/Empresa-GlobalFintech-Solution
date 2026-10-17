@@ -1,41 +1,31 @@
 ﻿package com.globalfintech.globalfinancialengine.infrastructure.controller;
 
 import com.globalfintech.globalfinancialengine.application.GenerateReportUseCase;
+import com.globalfintech.globalfinancialengine.application.dto.GenerateReportRequest;
 import com.globalfintech.globalfinancialengine.domain.model.FinancialReport;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reports")
 public class ReportController {
 
-    private final GenerateReportUseCase generateReportUseCase;
+    private final GenerateReportUseCase useCase;
 
-    public ReportController(GenerateReportUseCase generateReportUseCase) {
-        this.generateReportUseCase = generateReportUseCase;
+    public ReportController(GenerateReportUseCase useCase) {
+        this.useCase = useCase;
     }
 
     @PostMapping
-    public ResponseEntity<FinancialReport> generate(
-            @RequestBody Map<String, Object> request) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public FinancialReport generate(
+            @Valid @RequestBody GenerateReportRequest request) {
 
-        String standard = (String) request.get("standard");
-        String title = (String) request.get("title");
-        String watermark = (String) request.getOrDefault(
-                "watermark", "CONFIDENCIAL");
-
-        Object sectionsObject = request.get("sections");
-        List<String> sections = sectionsObject instanceof List<?> list
-                ? list.stream().map(String::valueOf).toList()
-                : List.of();
-
-        FinancialReport report = generateReportUseCase.execute(
-                standard, title, sections, watermark);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(report);
+        return useCase.execute(
+                request.standard(),
+                request.title(),
+                request.sections(),
+                request.watermark());
     }
 }

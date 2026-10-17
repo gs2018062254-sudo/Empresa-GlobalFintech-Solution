@@ -8,6 +8,7 @@ public class FinancialReport {
     private String title;
     private String headerContent;
     private String footerContent;
+    private String watermark;
     private List<String> sections = new ArrayList<>();
 
     public String getId() { return id; }
@@ -26,6 +27,9 @@ public class FinancialReport {
         this.footerContent = footerContent;
     }
 
+    public String getWatermark() { return watermark; }
+    public void setWatermark(String watermark) { this.watermark = watermark; }
+
     public List<String> getSections() { return sections; }
     public void setSections(List<String> sections) {
         this.sections = sections == null
@@ -33,3 +37,4 @@ public class FinancialReport {
                 : new ArrayList<>(sections);
     }
 }
+
