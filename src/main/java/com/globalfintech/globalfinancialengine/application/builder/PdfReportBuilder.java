@@ -3,10 +3,11 @@ package com.globalfintech.globalfinancialengine.application.builder;
 import com.globalfintech.globalfinancialengine.application.ReportExportService;
 import com.globalfintech.globalfinancialengine.domain.builder.ConcreteFinancialReportBuilder;
 import com.globalfintech.globalfinancialengine.domain.builder.ReportBuilder;
+import com.globalfintech.globalfinancialengine.domain.factory.ReportComponentFactory;
 import com.globalfintech.globalfinancialengine.domain.model.FinancialReport;
+import com.globalfintech.globalfinancialengine.domain.prototype.FinancialReportTemplate;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
-import java.util.List;
 
 @Component
 public class PdfReportBuilder implements ReportBuilder {
@@ -20,6 +21,36 @@ public class PdfReportBuilder implements ReportBuilder {
 
     public byte[] generate(FinancialReport report) throws IOException {
         return exportService.exportPdf(report);
+    }
+
+    @Override
+    public ReportBuilder reset() {
+        delegate.reset();
+        return this;
+    }
+
+    @Override
+    public ReportBuilder setMetadata(String id, String title) {
+        delegate.setMetadata(id, title);
+        return this;
+    }
+
+    @Override
+    public ReportBuilder applyTemplate(FinancialReportTemplate template) {
+        delegate.applyTemplate(template);
+        return this;
+    }
+
+    @Override
+    public ReportBuilder setComponents(ReportComponentFactory factory) {
+        delegate.setComponents(factory);
+        return this;
+    }
+
+    @Override
+    public ReportBuilder addSection(String section) {
+        delegate.addSection(section);
+        return this;
     }
 
     @Override
@@ -43,18 +74,6 @@ public class PdfReportBuilder implements ReportBuilder {
     @Override
     public ReportBuilder setFooter(String footer) {
         delegate.setFooter(footer);
-        return this;
-    }
-
-    @Override
-    public ReportBuilder setSections(List<String> sections) {
-        delegate.setSections(sections);
-        return this;
-    }
-
-    @Override
-    public ReportBuilder addSection(String section) {
-        delegate.addSection(section);
         return this;
     }
 

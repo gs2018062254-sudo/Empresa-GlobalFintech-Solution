@@ -13,13 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-@RequestMapping("/api/reports")
+@RequestMapping({"/api/reports", "/api/v1/reports"})
 public class ReportController {
     private final GenerateReportUseCase useCase;
     private final ReportExportService exportService;
@@ -37,7 +35,7 @@ public class ReportController {
         this.auditService = auditService;
     }
 
-    @PostMapping
+    @PostMapping({"", "/generate"})
     public ResponseEntity<FinancialReport> generate(
             @Valid @RequestBody GenerateReportRequest request) {
         FinancialReport report = create(request);
@@ -45,7 +43,8 @@ public class ReportController {
         return ResponseEntity.status(201).body(report);
     }
 
-    @PostMapping(value = "/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    @PostMapping(value = {"/pdf", "/generate/pdf"},
+            produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> pdf(
             @Valid @RequestBody GenerateReportRequest request) throws IOException {
         FinancialReport report = create(request);
@@ -62,7 +61,7 @@ public class ReportController {
                 .body(file);
     }
 
-    @PostMapping(value = "/excel",
+    @PostMapping(value = {"/excel", "/generate/excel"},
             produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> excel(
             @Valid @RequestBody GenerateReportRequest request) throws IOException {
@@ -81,7 +80,7 @@ public class ReportController {
                 .body(file);
     }
 
-    @PostMapping("/batch")
+    @PostMapping({"/batch", "/generate/batch"})
     public CompletableFuture<List<FinancialReport>> batch(
             @RequestBody List<@Valid GenerateReportRequest> requests) {
         auditService.record("BATCH", null, "STARTED");
@@ -95,8 +94,10 @@ public class ReportController {
 
     private FinancialReport create(GenerateReportRequest request) {
         return useCase.execute(
-                request.standard(),
+                request.reportId(),
                 request.title(),
+                request.standard(),
+                request.templateKey(),
                 request.sections(),
                 request.watermark());
     }

@@ -1,0 +1,35 @@
+@startuml
+title Generate Report - Sequence Diagram
+
+actor Cliente
+participant ReportController
+participant GenerateReportUseCase
+participant "ReportComponentFactory" as Factory
+participant FinancialReportTemplate
+participant ConcreteFinancialReportBuilder as Builder
+participant ReportWatermark
+
+Cliente -> ReportController : POST /api/v1/reports/generate
+ReportController -> GenerateReportUseCase : execute(reportId, title, standard, templateKey, sections, watermark)
+
+GenerateReportUseCase -> GenerateReportUseCase : selectFactory(standard)
+GenerateReportUseCase -> GenerateReportUseCase : getTemplate(templateKey)
+GenerateReportUseCase -> FinancialReportTemplate : clonePrototype()
+GenerateReportUseCase -> FinancialReportTemplate : applyDynamicParameters(...)
+
+GenerateReportUseCase -> Builder : reset()
+GenerateReportUseCase -> Builder : setMetadata(reportId, title)
+GenerateReportUseCase -> Builder : applyTemplate(clonedTemplate)
+GenerateReportUseCase -> Builder : setComponents(factory)
+loop por cada seccion adicional
+  GenerateReportUseCase -> Builder : addSection(section)
+end
+GenerateReportUseCase -> Builder : build()
+Builder --> GenerateReportUseCase : FinancialReport
+
+GenerateReportUseCase -> ReportWatermark : apply(report, watermark)
+ReportWatermark --> GenerateReportUseCase : FinancialReport
+GenerateReportUseCase --> ReportController : FinancialReport
+ReportController --> Cliente : 201 Created + JSON
+
+@enduml

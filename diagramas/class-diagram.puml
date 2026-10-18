@@ -1,0 +1,109 @@
+@startuml
+title Global Financial Engine - Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+package "Domain" {
+  interface Prototype~T~ {
+    +clonePrototype(): T
+  }
+
+  class FinancialReportTemplate {
+    -templateId: String
+    -defaultSections: List<String>
+    -stylingConfig: Map<String, String>
+    +clonePrototype(): FinancialReportTemplate
+    +applyDynamicParameters(parameters: Map<String, String>): void
+  }
+
+  class FinancialReport {
+    -id: String
+    -title: String
+    -headerContent: String
+    -footerContent: String
+    -watermark: String
+    -sections: List<String>
+  }
+
+  interface ReportHeader {
+    +createHeader(): String
+  }
+
+  interface ReportFooter {
+    +createFooter(): String
+  }
+
+  interface ReportComponentFactory {
+    +createHeader(): ReportHeader
+    +createFooter(): ReportFooter
+  }
+
+  interface ReportBuilder {
+    +reset(): ReportBuilder
+    +setMetadata(id: String, title: String): ReportBuilder
+    +applyTemplate(template: FinancialReportTemplate): ReportBuilder
+    +setComponents(factory: ReportComponentFactory): ReportBuilder
+    +addSection(section: String): ReportBuilder
+    +build(): FinancialReport
+  }
+
+  class ConcreteFinancialReportBuilder {
+    -report: FinancialReport
+  }
+
+  class ReportWatermark {
+    +apply(report: FinancialReport, watermark: String): FinancialReport
+  }
+}
+
+package "Infrastructure" {
+  class IFRSReportFactory
+  class USGAAPReportFactory
+  class EUTAXReportFactory
+  class RedisPrototypeRegistry
+}
+
+package "Application" {
+  class GenerateReportUseCase {
+    -prototypeRegistry: Map<String, FinancialReportTemplate>
+    +execute(reportId: String, title: String, standard: String, templateKey: String, additionalSections: List<String>, watermarkText: String): FinancialReport
+    +registerCustomTemplate(key: String, template: FinancialReportTemplate): void
+  }
+
+  class ReportExportService {
+    +exportPdf(report: FinancialReport): byte[]
+    +exportExcel(report: FinancialReport): byte[]
+  }
+
+  class DigitalSignatureService {
+    +sign(content: String): String
+    +verify(content: String, signedValue: String): boolean
+  }
+
+  class AuditService {
+    +record(action: String, reportId: String, result: String): void
+  }
+
+  class GenerateReportRequest
+}
+
+FinancialReportTemplate ..|> Prototype
+ConcreteFinancialReportBuilder ..|> ReportBuilder
+IFRSReportFactory ..|> ReportComponentFactory
+USGAAPReportFactory ..|> ReportComponentFactory
+EUTAXReportFactory ..|> ReportComponentFactory
+
+GenerateReportUseCase --> ReportComponentFactory
+GenerateReportUseCase --> FinancialReportTemplate
+GenerateReportUseCase --> ConcreteFinancialReportBuilder
+GenerateReportUseCase --> ReportWatermark
+
+RedisPrototypeRegistry ..> FinancialReportTemplate
+ReportExportService ..> FinancialReport
+
+ReportBuilder --> FinancialReport
+ReportBuilder --> FinancialReportTemplate
+ReportBuilder --> ReportComponentFactory
+
+@enduml

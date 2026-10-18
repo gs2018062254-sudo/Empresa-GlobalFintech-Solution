@@ -1,63 +1,81 @@
 package com.globalfintech.globalfinancialengine.domain.builder;
 
+import com.globalfintech.globalfinancialengine.domain.factory.ReportComponentFactory;
 import com.globalfintech.globalfinancialengine.domain.model.FinancialReport;
-import java.util.ArrayList;
-import java.util.List;
+import com.globalfintech.globalfinancialengine.domain.prototype.FinancialReportTemplate;
 
 public class ConcreteFinancialReportBuilder implements ReportBuilder {
 
-    private String id;
-    private String title;
-    private String header;
-    private String footer;
-    private List<String> sections = new ArrayList<>();
+    private FinancialReport report;
+
+    public ConcreteFinancialReportBuilder() {
+        reset();
+    }
+
+    @Override
+    public ReportBuilder reset() {
+        this.report = new FinancialReport();
+        return this;
+    }
+
+    @Override
+    public ReportBuilder setMetadata(String id, String title) {
+        this.report.setId(id);
+        this.report.setTitle(title);
+        return this;
+    }
+
+    @Override
+    public ReportBuilder applyTemplate(FinancialReportTemplate template) {
+        if (template != null) {
+            this.report.setSections(template.getDefaultSections());
+        }
+        return this;
+    }
+
+    @Override
+    public ReportBuilder setComponents(ReportComponentFactory factory) {
+        if (factory != null) {
+            this.report.setHeaderContent(factory.createHeader().createHeader());
+            this.report.setFooterContent(factory.createFooter().createFooter());
+        }
+        return this;
+    }
 
     @Override
     public ReportBuilder setId(String id) {
-        this.id = id;
+        this.report.setId(id);
         return this;
     }
 
     @Override
     public ReportBuilder setTitle(String title) {
-        this.title = title;
+        this.report.setTitle(title);
         return this;
     }
 
     @Override
     public ReportBuilder setHeader(String header) {
-        this.header = header;
+        this.report.setHeaderContent(header);
         return this;
     }
 
     @Override
     public ReportBuilder setFooter(String footer) {
-        this.footer = footer;
-        return this;
-    }
-
-    @Override
-    public ReportBuilder setSections(List<String> sections) {
-        this.sections = sections == null
-                ? new ArrayList<>()
-                : new ArrayList<>(sections);
+        this.report.setFooterContent(footer);
         return this;
     }
 
     @Override
     public ReportBuilder addSection(String section) {
-        this.sections.add(section);
+        this.report.getSections().add(section);
         return this;
     }
 
     @Override
     public FinancialReport build() {
-        FinancialReport report = new FinancialReport();
-        report.setId(id);
-        report.setTitle(title);
-        report.setHeaderContent(header);
-        report.setFooterContent(footer);
-        report.setSections(sections);
-        return report;
+        FinancialReport result = this.report;
+        reset();
+        return result;
     }
 }

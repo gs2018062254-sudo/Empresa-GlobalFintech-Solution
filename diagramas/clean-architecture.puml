@@ -1,0 +1,76 @@
+@startuml
+title Global Financial Engine - Clean Architecture
+
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+rectangle "Infrastructure Layer" as infra {
+  package "controller" {
+    class ReportController
+  }
+
+  package "factory" {
+    class IFRSReportFactory
+    class USGAAPReportFactory
+    class EUTAXReportFactory
+  }
+
+  package "persistence" {
+    class RedisPrototypeRegistry
+  }
+}
+
+rectangle "Application Layer" as app {
+  class GenerateReportUseCase
+  class ReportExportService
+  class DigitalSignatureService
+  class AuditService
+  class GenerateReportRequest
+  class PdfReportBuilder
+  class ExcelReportBuilder
+}
+
+rectangle "Domain Layer" as domain {
+  interface Prototype
+  class FinancialReportTemplate
+  class FinancialReport
+  interface ReportHeader
+  interface ReportFooter
+  interface ReportComponentFactory
+  interface ReportBuilder
+  class ConcreteFinancialReportBuilder
+  class ReportWatermark
+}
+
+ReportController --> GenerateReportUseCase
+ReportController --> ReportExportService
+ReportController --> DigitalSignatureService
+ReportController --> AuditService
+ReportController --> GenerateReportRequest
+
+GenerateReportUseCase --> ReportComponentFactory
+GenerateReportUseCase --> FinancialReportTemplate
+GenerateReportUseCase --> ConcreteFinancialReportBuilder
+GenerateReportUseCase --> ReportWatermark
+
+IFRSReportFactory ..|> ReportComponentFactory
+USGAAPReportFactory ..|> ReportComponentFactory
+EUTAXReportFactory ..|> ReportComponentFactory
+
+ConcreteFinancialReportBuilder ..|> ReportBuilder
+FinancialReportTemplate ..|> Prototype
+
+PdfReportBuilder ..|> ReportBuilder
+ExcelReportBuilder ..|> ReportBuilder
+PdfReportBuilder --> ReportExportService
+ExcelReportBuilder --> ReportExportService
+
+RedisPrototypeRegistry ..> FinancialReportTemplate
+
+note right of GenerateReportUseCase
+Selecciona la fabrica segun normativa,
+clona la plantilla Prototype,
+y construye el reporte con Builder.
+end note
+
+@enduml
