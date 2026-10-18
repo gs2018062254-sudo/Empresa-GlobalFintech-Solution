@@ -8,6 +8,8 @@ import com.globalfintech.globalfinancialengine.domain.watermark.ReportWatermark;
 import com.globalfintech.globalfinancialengine.infrastructure.factory.EUTAXReportFactory;
 import com.globalfintech.globalfinancialengine.infrastructure.factory.IFRSReportFactory;
 import com.globalfintech.globalfinancialengine.infrastructure.factory.USGAAPReportFactory;
+import com.globalfintech.globalfinancialengine.infrastructure.persistence.RedisPrototypeRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -22,8 +24,15 @@ public class GenerateReportUseCase {
     private final ReportWatermark watermark = new ReportWatermark();
     private final Map<String, FinancialReportTemplate> prototypeRegistry =
             new ConcurrentHashMap<>();
+    private final RedisPrototypeRegistry redisPrototypeRegistry;
 
     public GenerateReportUseCase() {
+        this(null);
+    }
+
+    @Autowired
+    public GenerateReportUseCase(RedisPrototypeRegistry redisPrototypeRegistry) {
+        this.redisPrototypeRegistry = redisPrototypeRegistry;
         initPrototypeRegistry();
     }
 
@@ -88,12 +97,14 @@ public class GenerateReportUseCase {
             throw new IllegalArgumentException(
                     "La plantilla no puede ser nula");
         }
-        prototypeRegistry.put(key.trim().toUpperCase(), template.clonePrototype());
+        String resolvedKey = key.trim().toUpperCase();
+        FinancialReportTemplate clonedTemplate = template.clonePrototype();
+        prototypeRegistry.put(resolvedKey, clonedTemplate);
+        saveTemplateToDistributedCache(resolvedKey, clonedTemplate);
     }
 
     private void initPrototypeRegistry() {
-        prototypeRegistry.put(
-                "MONTHLY_STD",
+        FinancialReportTemplate monthlyTemplate =
                 new FinancialReportTemplate(
                         "MONTHLY_STD",
                         List.of(
@@ -103,7 +114,9 @@ public class GenerateReportUseCase {
                         Map.of(
                                 "theme", "DARK_BLUE",
                                 "fontSize", "11pt",
-                                "standard", "${standard}")));
+                                "standard", "${standard}"));
+        prototypeRegistry.put("MONTHLY_STD", monthlyTemplate);
+        saveTemplateToDistributedCache("MONTHLY_STD", monthlyTemplate);
     }
 
     private FinancialReportTemplate getTemplate(String templateKey) {
@@ -112,10 +125,44 @@ public class GenerateReportUseCase {
                 : templateKey.trim().toUpperCase();
         FinancialReportTemplate template = prototypeRegistry.get(resolvedKey);
         if (template == null) {
+            template = getTemplateFromDistributedCache(resolvedKey);
+            if (template != null) {
+                prototypeRegistry.put(resolvedKey, template);
+            }
+        }
+        if (template == null) {
             throw new IllegalArgumentException(
                     "Plantilla no encontrada: " + resolvedKey);
         }
         return template;
+    }
+
+    private FinancialReportTemplate getTemplateFromDistributedCache(String key) {
+        if (redisPrototypeRegistry == null) {
+            return null;
+        }
+
+        try {
+            return redisPrototypeRegistry
+                    .find(key, FinancialReportTemplate.class)
+                    .orElse(null);
+        } catch (RuntimeException ignored) {
+            return null;
+        }
+    }
+
+    private void saveTemplateToDistributedCache(
+            String key,
+            FinancialReportTemplate template) {
+        if (redisPrototypeRegistry == null) {
+            return;
+        }
+
+        try {
+            redisPrototypeRegistry.register(key, template);
+        } catch (RuntimeException ignored) {
+            // Fallback silencioso a cache en memoria cuando Redis no esta disponible.
+        }
     }
 
     private String resolveReportId(String reportId) {

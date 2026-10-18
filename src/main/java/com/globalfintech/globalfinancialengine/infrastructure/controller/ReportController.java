@@ -1,8 +1,9 @@
 package com.globalfintech.globalfinancialengine.infrastructure.controller;
 
 import com.globalfintech.globalfinancialengine.application.GenerateReportUseCase;
-import com.globalfintech.globalfinancialengine.application.ReportExportService;
 import com.globalfintech.globalfinancialengine.application.audit.AuditService;
+import com.globalfintech.globalfinancialengine.application.builder.ExcelReportBuilder;
+import com.globalfintech.globalfinancialengine.application.builder.PdfReportBuilder;
 import com.globalfintech.globalfinancialengine.application.security.DigitalSignatureService;
 import com.globalfintech.globalfinancialengine.application.dto.GenerateReportRequest;
 import com.globalfintech.globalfinancialengine.domain.model.FinancialReport;
@@ -20,17 +21,20 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping({"/api/reports", "/api/v1/reports"})
 public class ReportController {
     private final GenerateReportUseCase useCase;
-    private final ReportExportService exportService;
+    private final PdfReportBuilder pdfReportBuilder;
+    private final ExcelReportBuilder excelReportBuilder;
     private final DigitalSignatureService signatureService;
     private final AuditService auditService;
 
     public ReportController(
             GenerateReportUseCase useCase,
-            ReportExportService exportService,
+            PdfReportBuilder pdfReportBuilder,
+            ExcelReportBuilder excelReportBuilder,
             DigitalSignatureService signatureService,
             AuditService auditService) {
         this.useCase = useCase;
-        this.exportService = exportService;
+        this.pdfReportBuilder = pdfReportBuilder;
+        this.excelReportBuilder = excelReportBuilder;
         this.signatureService = signatureService;
         this.auditService = auditService;
     }
@@ -48,7 +52,7 @@ public class ReportController {
     public ResponseEntity<byte[]> pdf(
             @Valid @RequestBody GenerateReportRequest request) throws IOException {
         FinancialReport report = create(request);
-        byte[] file = exportService.exportPdf(report);
+        byte[] file = pdfReportBuilder.generate(report);
         String signature = signatureService.sign(reportContent(report));
 
         auditService.record("EXPORT_PDF", report.getId(), "SUCCESS");
@@ -66,7 +70,7 @@ public class ReportController {
     public ResponseEntity<byte[]> excel(
             @Valid @RequestBody GenerateReportRequest request) throws IOException {
         FinancialReport report = create(request);
-        byte[] file = exportService.exportExcel(report);
+        byte[] file = excelReportBuilder.generate(report);
         String signature = signatureService.sign(reportContent(report));
 
         auditService.record("EXPORT_EXCEL", report.getId(), "SUCCESS");
