@@ -1,4 +1,4 @@
-﻿package com.globalfintech.globalfinancialengine.domain.prototype;
+package com.globalfintech.globalfinancialengine.domain.prototype;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-﻿package com.globalfintech.globalfinancialengine.application.security;
+package com.globalfintech.globalfinancialengine.application.security;
 
 import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;

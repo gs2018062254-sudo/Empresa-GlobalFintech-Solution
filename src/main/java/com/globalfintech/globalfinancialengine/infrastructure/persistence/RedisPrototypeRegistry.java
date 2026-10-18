@@ -1,4 +1,4 @@
-﻿package com.globalfintech.globalfinancialengine.infrastructure.persistence;
+package com.globalfintech.globalfinancialengine.infrastructure.persistence;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,11 +12,9 @@ public class RedisPrototypeRegistry {
     private final StringRedisTemplate redis;
     private final ObjectMapper mapper;
 
-    public RedisPrototypeRegistry(
-            StringRedisTemplate redis,
-            ObjectMapper mapper) {
+    public RedisPrototypeRegistry(StringRedisTemplate redis) {
         this.redis = redis;
-        this.mapper = mapper;
+        this.mapper = new ObjectMapper();
     }
 
     public void register(String key, Object template) {

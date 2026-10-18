@@ -1,4 +1,4 @@
-﻿package com.globalfintech.globalfinancialengine.infrastructure.controller;
+package com.globalfintech.globalfinancialengine.infrastructure.controller;
 
 import com.globalfintech.globalfinancialengine.application.GenerateReportUseCase;
 import com.globalfintech.globalfinancialengine.application.ReportExportService;

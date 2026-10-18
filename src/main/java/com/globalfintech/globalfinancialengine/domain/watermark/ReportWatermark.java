@@ -1,4 +1,4 @@
-﻿package com.globalfintech.globalfinancialengine.domain.watermark;
+package com.globalfintech.globalfinancialengine.domain.watermark;
 
 import com.globalfintech.globalfinancialengine.domain.model.FinancialReport;
 

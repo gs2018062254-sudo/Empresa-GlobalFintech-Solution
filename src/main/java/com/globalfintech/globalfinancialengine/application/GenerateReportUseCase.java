@@ -1,4 +1,4 @@
-﻿package com.globalfintech.globalfinancialengine.application;
+package com.globalfintech.globalfinancialengine.application;
 
 import com.globalfintech.globalfinancialengine.domain.builder.ConcreteFinancialReportBuilder;
 import com.globalfintech.globalfinancialengine.domain.factory.ReportComponentFactory;

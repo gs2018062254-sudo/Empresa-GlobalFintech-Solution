@@ -1,4 +1,4 @@
-﻿package com.globalfintech.globalfinancialengine.domain.model;
+package com.globalfintech.globalfinancialengine.domain.model;
 
 import java.util.ArrayList;
 import java.util.List;

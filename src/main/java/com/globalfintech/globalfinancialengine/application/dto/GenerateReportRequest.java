@@ -1,4 +1,4 @@
-﻿package com.globalfintech.globalfinancialengine.application.dto;
+package com.globalfintech.globalfinancialengine.application.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

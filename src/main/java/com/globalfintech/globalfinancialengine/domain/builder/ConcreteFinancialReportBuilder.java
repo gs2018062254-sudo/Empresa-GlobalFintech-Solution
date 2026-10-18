@@ -1,4 +1,4 @@
-﻿package com.globalfintech.globalfinancialengine.domain.builder;
+package com.globalfintech.globalfinancialengine.domain.builder;
 
 import com.globalfintech.globalfinancialengine.domain.model.FinancialReport;
 import java.util.ArrayList;
